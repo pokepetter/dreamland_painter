@@ -79,8 +79,8 @@ ctx2.putImageData(imgData, 0, 0);
 // img.src = cvs.toDataURL();
 // img.data = imgData;
 color = [128, 128, 0];
-draw = false;
-document.onmousedown = function(ev) {
+drawing = false;
+function mouse_down(ev) {
     // color = [128, 128, 0];
     // color = [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256)];
     // tint the brush
@@ -114,19 +114,32 @@ document.onmousedown = function(ev) {
     // ctx.fillRect(ev.x, ev.y, 64, 64);
     // ctx.drawImage(img, ev.x, ev.y, 64, 64);
 }
-document.onmouseup = function(ev) {drawing = false;}
+canvas.addEventListener("mousedown", mouse_down, false);
+canvas.addEventListener("touchstart", mouse_down, false);
+
+function mouse_up(ev) {drawing = false;}
+canvas.addEventListener("mouseup", mouse_up, false);
+canvas.addEventListener("touchend", mouse_up, false);
 
 var brush_size = 256;
 
-function paint(ev) {
+function paint(e) {
     if (drawing) {
-        // ctx.globalAlpha = .5;
+        if(e.type == 'touchmove') {
+            var touch = e.touches[0] || e.changedTouches[0];
+            x = touch.pageX;
+            y = touch.pageY;
+        }
+        else {
+            x = e.x;
+            y = e.y;
+        }
         // ctx.fillRect(ev.x-(brush_size[0]/2), ev.y-(brush_size[1]/2), brush_size[0], brush_size[1]);
-        ctx.drawImage(img, ev.x-(brush_size/2), ev.y-(brush_size/2), brush_size, brush_size);
+        ctx.drawImage(img, x-(brush_size/2), y-(brush_size/2), brush_size, brush_size);
     }
 }
 canvas.addEventListener("mousemove", paint, false);
-canvas.addEventListener("touchscreens ", paint, false);
+canvas.addEventListener("touchmove", paint, false);
 
 
 // color sliders
