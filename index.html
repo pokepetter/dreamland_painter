@@ -8,10 +8,10 @@
 
 <body style="margin: 0; background-color:black">
 
-    <button class="button">white</button>
-    <button class="button">eyedropper</button>
-    <button class="button">+</button>
-    <button class="button">-</button>
+    <button class="button" id="white_button">white</button>
+    <button class="button" id="eyedropper_button">eyedropper</button>
+    <button class="button" id="increase_brush_size_button">+</button>
+    <button class="button" id="decrease_brush_size_button">-</button>
     <button class="button" id="color_panel">color</button>
     <div class="slidecontainer"><input type="range" min="0" max="360" value="50" class="slider" id="hue_slider"></div>
     <div class="slidecontainer"><input type="range" min="0" max="100" value="50" class="slider" id="saturation_slider"></div>
@@ -101,8 +101,8 @@ document.onmousedown = function(ev) {
     ctx2.putImageData(imgData, 0, 0);
     img.src = cvs.toDataURL();
 
-    draw = true;
-    ctx.drawImage(img, ev.x-(brush_size[0]/2), ev.y-(brush_size[1]/2), brush_size[0], brush_size[1]);
+    drawing = true;
+    paint(ev);
     // ctx.fillStyle = 'teal';
 
     // var imageData = ctx.getImageData(ev.x, ev.y, 1, 1).data;
@@ -114,18 +114,19 @@ document.onmousedown = function(ev) {
     // ctx.fillRect(ev.x, ev.y, 64, 64);
     // ctx.drawImage(img, ev.x, ev.y, 64, 64);
 }
-document.onmouseup = function(ev) {draw = false;}
+document.onmouseup = function(ev) {drawing = false;}
 
-var brush_size = [512, 512];
+var brush_size = 256;
 
-function onMouseMove(ev) {
-    if (draw) {
+function paint(ev) {
+    if (drawing) {
         // ctx.globalAlpha = .5;
         // ctx.fillRect(ev.x-(brush_size[0]/2), ev.y-(brush_size[1]/2), brush_size[0], brush_size[1]);
-        ctx.drawImage(img, ev.x-(brush_size[0]/2), ev.y-(brush_size[1]/2), brush_size[0], brush_size[1]);
+        ctx.drawImage(img, ev.x-(brush_size/2), ev.y-(brush_size/2), brush_size, brush_size);
     }
 }
-canvas.addEventListener("mousemove", onMouseMove, false);
+canvas.addEventListener("mousemove", paint, false);
+canvas.addEventListener("touchscreens ", paint, false);
 
 
 // color sliders
@@ -133,6 +134,13 @@ var hue_slider = document.getElementById("hue_slider");
 var saturation_slider = document.getElementById("saturation_slider");
 var value_slider = document.getElementById("value_slider");
 var color_panel = document.getElementById("color_panel");
+
+document.getElementById("white_button").onclick = function() {color=[255,255,255,255]}
+document.getElementById("eyedropper_button").onclick = function() {
+    color=[255,255,255,255]
+}
+document.getElementById("increase_brush_size_button").onclick = function() {brush_size *= 1.5}
+document.getElementById("decrease_brush_size_button").onclick = function() {brush_size *= .75}
 
 function update_color () {
   color_panel.style.backgroundColor = 'rgb('+hue_slider.value+', '+saturation_slider.value+', '+value_slider.value+')';
