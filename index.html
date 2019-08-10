@@ -1,0 +1,146 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Dreamland Painter</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+
+<body style="margin: 0; background-color:black">
+
+    <button class="button">white</button>
+    <button class="button">eyedropper</button>
+    <button class="button">+</button>
+    <button class="button">-</button>
+    <button class="button" id="color_panel">color</button>
+    <div class="slidecontainer"><input type="range" min="0" max="360" value="50" class="slider" id="hue_slider"></div>
+    <div class="slidecontainer"><input type="range" min="0" max="100" value="50" class="slider" id="saturation_slider"></div>
+    <div class="slidecontainer"><input type="range" min="0" max="100" value="50" class="slider" id="value_slider"></div>
+    <br>
+</body>
+</html>
+
+<script>
+print = console.log
+var canvas = document.createElement('canvas');
+canvas.id = 'someId';
+
+if( navigator.userAgent.match(/Android/i)
+ || navigator.userAgent.match(/webOS/i)
+ || navigator.userAgent.match(/iPhone/i)
+ || navigator.userAgent.match(/iPad/i)
+ || navigator.userAgent.match(/iPod/i)
+ || navigator.userAgent.match(/BlackBerry/i)
+ || navigator.userAgent.match(/Windows Phone/i)
+ ){
+    canvas.width = 1080 /2;
+    canvas.height = 1920 /2;
+  }
+ else {
+    canvas.width = 1080/1;
+    canvas.height = 1920/1;
+    canvas.style.position = 'absolute';
+    // canvas.style.left = (window.screen.availWidth - canvas.width);
+    // canvas.style.top = (window.screen.availHeight - canvas.height);
+  }
+  // canvas.width = 1080 /2;
+  // canvas.height = 1920 /2;
+document.body.appendChild(canvas);
+ctx = canvas.getContext('2d')
+ctx.fillStyle = 'white';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+// var friend = new SimpleImage("pokebrush.png");
+// var img = new SimpleImage(friend.getWidth(),friend.getHeight());
+
+
+
+img = new Image();
+// img = new Image();
+img.src = "pokebrush.png";
+// ctx.drawImage(img, 0, 0, 64, 64);
+var cvs = document.createElement('canvas');
+cvs.width = 512;
+cvs.height = 512;
+var ctx2 = cvs.getContext("2d");
+ctx.drawImage(img, 0, 0, 512, 512);
+var imgData = ctx2.getImageData(0, 0, 512, 512);
+var i;
+for (i = 0; i < imgData.data.length; i += 4) {
+  // print(imgData.data[i+3]);
+  imgData.data[i] = 255;
+  imgData.data[i+1] = 100;
+  imgData.data[i+2] = 0;
+  imgData.data[i+3] = 255;
+}
+
+ctx2.putImageData(imgData, 0, 0);
+// document.body.appendChild(cvs);
+// img.src = cvs.toDataURL();
+// img.data = imgData;
+color = [128, 128, 0];
+draw = false;
+document.onmousedown = function(ev) {
+    // color = [128, 128, 0];
+    // color = [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256)];
+    // tint the brush
+    var cvs = document.createElement('canvas');
+    cvs.width = 512;
+    cvs.height = 512;
+    var ctx2 = cvs.getContext("2d");
+    ctx2.drawImage(img, 0, 0, 512, 512);
+    var imgData = ctx2.getImageData(0, 0, 512, 512);
+    var i;
+    for (i = 0; i < imgData.data.length; i += 4) {
+      imgData.data[i] = color[0];
+      imgData.data[i+1] = color[1];
+      imgData.data[i+2] = color[2];
+      imgData.data[i+3] = imgData.data[i+3];
+    }
+
+    ctx2.putImageData(imgData, 0, 0);
+    img.src = cvs.toDataURL();
+
+    draw = true;
+    ctx.drawImage(img, ev.x-(brush_size[0]/2), ev.y-(brush_size[1]/2), brush_size[0], brush_size[1]);
+    // ctx.fillStyle = 'teal';
+
+    // var imageData = ctx.getImageData(ev.x, ev.y, 1, 1).data;
+    // rgbaColor = 'rgba(' + imageData[0] + ',' + imageData[1] + ',' + imageData[2] + ',1)';
+    // print('color:', rgbaColor);
+    // if (rgbaColor != 'rgba(0,0,0,1)') {
+    //     ctx.fillStyle = rgbaColor;
+    // }
+    // ctx.fillRect(ev.x, ev.y, 64, 64);
+    // ctx.drawImage(img, ev.x, ev.y, 64, 64);
+}
+document.onmouseup = function(ev) {draw = false;}
+
+var brush_size = [512, 512];
+
+function onMouseMove(ev) {
+    if (draw) {
+        // ctx.globalAlpha = .5;
+        // ctx.fillRect(ev.x-(brush_size[0]/2), ev.y-(brush_size[1]/2), brush_size[0], brush_size[1]);
+        ctx.drawImage(img, ev.x-(brush_size[0]/2), ev.y-(brush_size[1]/2), brush_size[0], brush_size[1]);
+    }
+}
+canvas.addEventListener("mousemove", onMouseMove, false);
+
+
+// color sliders
+var hue_slider = document.getElementById("hue_slider");
+var saturation_slider = document.getElementById("saturation_slider");
+var value_slider = document.getElementById("value_slider");
+var color_panel = document.getElementById("color_panel");
+
+function update_color () {
+  color_panel.style.backgroundColor = 'rgb('+hue_slider.value+', '+saturation_slider.value+', '+value_slider.value+')';
+  color = [hue_slider.value, saturation_slider.value, value_slider.value];
+}
+
+hue_slider.oninput = update_color
+saturation_slider.oninput = update_color
+value_slider.oninput = update_color
+
+</script>
