@@ -126,6 +126,7 @@ var brush_size = 256;
 function paint(e) {
     if (drawing) {
         if(e.type == 'touchmove') {
+            e.preventDefault();
             var touch = e.touches[0] || e.changedTouches[0];
             x = touch.pageX;
             y = touch.pageY;
