@@ -59,12 +59,13 @@ img = new Image();
 // img = new Image();
 img.src = "pokebrush.png";
 // ctx.drawImage(img, 0, 0, 64, 64);
+cvs_size = 128;
 var cvs = document.createElement('canvas');
-cvs.width = 512;
-cvs.height = 512;
+cvs.width = cvs_size;
+cvs.height = cvs_size;
 var ctx2 = cvs.getContext("2d");
-ctx.drawImage(img, 0, 0, 512, 512);
-var imgData = ctx2.getImageData(0, 0, 512, 512);
+ctx.drawImage(img, 0, 0, cvs_size, cvs_size);
+var imgData = ctx2.getImageData(0, 0, cvs_size, cvs_size);
 var i;
 for (i = 0; i < imgData.data.length; i += 4) {
   // print(imgData.data[i+3]);
@@ -85,11 +86,11 @@ function mouse_down(ev) {
     // color = [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256)];
     // tint the brush
     var cvs = document.createElement('canvas');
-    cvs.width = 512;
-    cvs.height = 512;
+    cvs.width = cvs_size;
+    cvs.height = cvs_size;
     var ctx2 = cvs.getContext("2d");
-    ctx2.drawImage(img, 0, 0, 512, 512);
-    var imgData = ctx2.getImageData(0, 0, 512, 512);
+    ctx2.drawImage(img, 0, 0, cvs_size, cvs_size);
+    var imgData = ctx2.getImageData(0, 0, cvs_size, cvs_size);
     var i;
     for (i = 0; i < imgData.data.length; i += 4) {
       imgData.data[i] = color[0];
