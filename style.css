@@ -7,13 +7,15 @@
     text-decoration: none;
     display: inline-block;
     font-size: 24px;
-    width:100px;
-    height:100px;
+    width: 100px;
+    height: 100px;
+    margin-bottom: 4px;
+    border-radius: 16px;
 }
 
 
 .slidecontainer {
-  width: 50%; /* Width of the outside container */
+  width: 100%; /* Width of the outside container */
 }
 
 /* The slider itself */

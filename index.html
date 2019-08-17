@@ -7,58 +7,54 @@
 
 
 <body style="margin: 0; background-color:black">
-
-    <button class="button" id="white_button">white</button>
-    <button class="button" id="eyedropper_button">eyedropper</button>
-    <button class="button" id="increase_brush_size_button">+</button>
-    <button class="button" id="decrease_brush_size_button">-</button>
-    <button class="button" id="color_panel">color</button>
-    <div class="slidecontainer"><input type="range" min="0" max="360" value="50" class="slider" id="hue_slider"></div>
-    <div class="slidecontainer"><input type="range" min="0" max="100" value="50" class="slider" id="saturation_slider"></div>
-    <div class="slidecontainer"><input type="range" min="0" max="100" value="50" class="slider" id="value_slider"></div>
+    <div id="button_container" style="right:0%; top:1%; position:fixed; display:block; width:10%; z-index:1;">
+        <button class="button" id="white_button">white</button>
+        <button class="button" id="eyedropper_button">eyedropper</button>
+        <button class="button" id="increase_brush_size_button">+</button>
+        <button class="button" id="decrease_brush_size_button">-</button>
+        <button class="button" id="color_panel">color</button>
+        <button class="button" id="pen">pen</button>
+    </div>
+    <div id="footer" style="left:1%; bottom:1%; position:fixed; width:50%; z-index:1;">
+        <div class="slidecontainer"><input type="range" min="0" max="255" value="50" class="slider" id="hue_slider"></div>
+        <div class="slidecontainer"><input type="range" min="0" max="255" value="50" class="slider" id="saturation_slider"></div>
+        <div class="slidecontainer"><input type="range" min="0" max="255" value="50" class="slider" id="value_slider"></div>
+    </div>
     <br>
 </body>
 </html>
 
 <script>
 print = console.log
+
 var canvas = document.createElement('canvas');
 canvas.id = 'someId';
+// canvas.width = 1080*.88;
+// canvas.height = 1920*.88;
+canvas.width = 1080;
+canvas.height = 1920;
+canvas.width = 1920;
+canvas.height = 1080;
+canvas.style.position = 'absolute';
+canvas.style.left = '1%';
 
-if( navigator.userAgent.match(/Android/i)
- || navigator.userAgent.match(/webOS/i)
- || navigator.userAgent.match(/iPhone/i)
- || navigator.userAgent.match(/iPad/i)
- || navigator.userAgent.match(/iPod/i)
- || navigator.userAgent.match(/BlackBerry/i)
- || navigator.userAgent.match(/Windows Phone/i)
- ){
-    canvas.width = 1080 /2;
-    canvas.height = 1920 /2;
-  }
- else {
-    canvas.width = 1080/1;
-    canvas.height = 1920/1;
-    canvas.style.position = 'absolute';
-    // canvas.style.left = (window.screen.availWidth - canvas.width);
-    // canvas.style.top = (window.screen.availHeight - canvas.height);
-  }
-  // canvas.width = 1080 /2;
-  // canvas.height = 1920 /2;
+if (canvas.height > canvas.width) {
+    canvas.style.height = '88%';
+    canvas.style.width = canvas.style.height * 9/16;
+}
+else {
+    canvas.style.width = '88%';
+    canvas.style.height = canvas.style.width * 9/16;
+}
 document.body.appendChild(canvas);
+
 ctx = canvas.getContext('2d')
 ctx.fillStyle = 'white';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-// var friend = new SimpleImage("pokebrush.png");
-// var img = new SimpleImage(friend.getWidth(),friend.getHeight());
-
-
-
 img = new Image();
-// img = new Image();
 img.src = "pokebrush.png";
-// ctx.drawImage(img, 0, 0, 64, 64);
+
 cvs_size = 128;
 var cvs = document.createElement('canvas');
 cvs.width = cvs_size;
@@ -145,17 +141,17 @@ function paint(e) {
         if(e.type == 'touchmove') {
             e.preventDefault();
             var touch = e.touches[0] || e.changedTouches[0];
-            x = touch.pageX - canvas_rect.left;
-            y = touch.pageY - canvas_rect.top;
+            var h = canvas.height / canvas_rect.height;
+            x = (touch.pageX - canvas_rect.x) * h;
+            y = (touch.pageY - canvas_rect.top) * h;
         }
         else {
-            x = e.x - canvas_rect.left;
-            y = e.y - canvas_rect.top;
+            var h = canvas.height / canvas_rect.height;
+            x = (e.x - canvas_rect.x) * h;
+            y = (e.y - canvas_rect.top) * h;
         }
-        // ctx.fillRect(ev.x-(brush_size[0]/2), ev.y-(brush_size[1]/2), brush_size[0], brush_size[1]);
         if (prev_pos == null) {
             ctx.drawImage(img, x-(brush_size/2), y-(brush_size/2), brush_size, brush_size);
-            // return;
         }
         else {
             var dist = distanceApprox(prev_pos, [x,y]);
@@ -181,12 +177,14 @@ canvas.addEventListener("touchmove", paint, false);
 
 
 // color sliders
+var white_button = document.getElementById("white_button");
 var hue_slider = document.getElementById("hue_slider");
 var saturation_slider = document.getElementById("saturation_slider");
 var value_slider = document.getElementById("value_slider");
 var color_panel = document.getElementById("color_panel");
 
-document.getElementById("white_button").onclick = function() {color=[255,255,255,255]}
+white_button.onclick = function() {color=[255,255,255,255]}
+
 document.getElementById("eyedropper_button").onclick = function() {
     color=[255,255,255,255]
 }
