@@ -155,12 +155,13 @@ function paint(e) {
         // ctx.fillRect(ev.x-(brush_size[0]/2), ev.y-(brush_size[1]/2), brush_size[0], brush_size[1]);
         if (prev_pos == null) {
             ctx.drawImage(img, x-(brush_size/2), y-(brush_size/2), brush_size, brush_size);
+            // return;
         }
         else {
             var dist = distanceApprox(prev_pos, [x,y]);
             dist = Math.floor(dist);
 
-            if (dist <= 1) {
+            if (dist <= 1 * (brush_size/16)) {
                 ctx.drawImage(img, x-(brush_size/2), y-(brush_size/2), brush_size, brush_size);
             }
             else {  // draw line between points
