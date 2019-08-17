@@ -81,6 +81,8 @@ ctx2.putImageData(imgData, 0, 0);
 // img.data = imgData;
 color = [128, 128, 0];
 drawing = false;
+var prev_pos = null;
+
 function mouse_down(ev) {
     // color = [128, 128, 0];
     // color = [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256)];
@@ -118,26 +120,59 @@ function mouse_down(ev) {
 canvas.addEventListener("mousedown", mouse_down, false);
 canvas.addEventListener("touchstart", mouse_down, false);
 
-function mouse_up(ev) {drawing = false;}
-canvas.addEventListener("mouseup", mouse_up, false);
-canvas.addEventListener("touchend", mouse_up, false);
-
+function mouse_up(ev) {
+    drawing = false;
+    prev_pos = null;
+}
+document.addEventListener("mouseup", mouse_up, false);
+document.addEventListener("touchend", mouse_up, false);
+var canvas_rect = canvas.getBoundingClientRect();
 var brush_size = 256;
+
+function distanceApprox(p1,p2){
+	// Approximation by using octagons approach
+	var x = p2[0]-p1[0];
+	var y = p2[1]-p1[1];
+	return 1.426776695*Math.min(0.7071067812*(Math.abs(x)+Math.abs(y)), Math.max (Math.abs(x), Math.abs(y)));
+}
+
+function lerp(a, b, t) {
+    return a + (b - a) * t;
+}
 
 function paint(e) {
     if (drawing) {
         if(e.type == 'touchmove') {
             e.preventDefault();
             var touch = e.touches[0] || e.changedTouches[0];
-            x = touch.pageX;
-            y = touch.pageY;
+            x = touch.pageX - canvas_rect.left;
+            y = touch.pageY - canvas_rect.top;
         }
         else {
-            x = e.x;
-            y = e.y;
+            x = e.x - canvas_rect.left;
+            y = e.y - canvas_rect.top;
         }
         // ctx.fillRect(ev.x-(brush_size[0]/2), ev.y-(brush_size[1]/2), brush_size[0], brush_size[1]);
-        ctx.drawImage(img, x-(brush_size/2), y-(brush_size/2), brush_size, brush_size);
+        if (prev_pos == null) {
+            ctx.drawImage(img, x-(brush_size/2), y-(brush_size/2), brush_size, brush_size);
+        }
+        else {
+            var dist = distanceApprox(prev_pos, [x,y]);
+            dist = Math.floor(dist);
+
+            if (dist <= 1) {
+                ctx.drawImage(img, x-(brush_size/2), y-(brush_size/2), brush_size, brush_size);
+            }
+            else {  // draw line between points
+                for (var i = 0; i < dist; i++) {
+                    t = i/dist;
+                    var _x = lerp(prev_pos[0], x, t);
+                    var _y = lerp(prev_pos[1], y, t);
+                    ctx.drawImage(img, _x-(brush_size/2), _y-(brush_size/2), brush_size, brush_size);
+                }
+            }
+        }
+        prev_pos = [x,y];
     }
 }
 canvas.addEventListener("mousemove", paint, false);
