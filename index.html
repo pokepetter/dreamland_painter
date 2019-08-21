@@ -16,9 +16,9 @@
         <button class="button" id="pen">pen</button>
     </div>
     <div id="footer" style="left:1%; bottom:1%; position:fixed; width:50%; z-index:1;">
-        <div class="slidecontainer"><input type="range" min="0" max="255" value="50" class="slider" id="hue_slider"></div>
-        <div class="slidecontainer"><input type="range" min="0" max="255" value="50" class="slider" id="saturation_slider"></div>
-        <div class="slidecontainer"><input type="range" min="0" max="255" value="50" class="slider" id="value_slider"></div>
+        <div class="slidecontainer"><input type="range" min="0" max="360" value="50" class="slider" id="hue_slider"></div>
+        <div class="slidecontainer"><input type="range" min="0" max="100" value="50" class="slider" id="saturation_slider"></div>
+        <div class="slidecontainer"><input type="range" min="0" max="100" value="50" class="slider" id="value_slider"></div>
     </div>
     <br>
 </body>
@@ -28,13 +28,11 @@
 print = console.log
 
 var canvas = document.createElement('canvas');
+var w = 1080;
+var h = 1920;
 canvas.id = 'someId';
-// canvas.width = 1080*.88;
-// canvas.height = 1920*.88;
-canvas.width = 1080;
-canvas.height = 1920;
-canvas.width = 1920;
-canvas.height = 1080;
+canvas.width = w;
+canvas.height = h;
 canvas.style.position = 'absolute';
 canvas.style.left = '1%';
 
@@ -55,63 +53,49 @@ ctx.fillRect(0, 0, canvas.width, canvas.height);
 img = new Image();
 img.src = "pokebrush.png";
 
-cvs_size = 128;
-var cvs = document.createElement('canvas');
-cvs.width = cvs_size;
-cvs.height = cvs_size;
-var ctx2 = cvs.getContext("2d");
-ctx.drawImage(img, 0, 0, cvs_size, cvs_size);
-var imgData = ctx2.getImageData(0, 0, cvs_size, cvs_size);
-var i;
-for (i = 0; i < imgData.data.length; i += 4) {
-  // print(imgData.data[i+3]);
-  imgData.data[i] = 255;
-  imgData.data[i+1] = 100;
-  imgData.data[i+2] = 0;
-  imgData.data[i+3] = 255;
-}
+brush_canvas_size = 128;
+var brush_canvas = document.createElement('canvas');
 
-ctx2.putImageData(imgData, 0, 0);
-// document.body.appendChild(cvs);
-// img.src = cvs.toDataURL();
-// img.data = imgData;
 color = [128, 128, 0];
 drawing = false;
+using_eyedropper = false;
 var prev_pos = null;
 
 function mouse_down(ev) {
     // color = [128, 128, 0];
     // color = [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256)];
     // tint the brush
-    var cvs = document.createElement('canvas');
-    cvs.width = cvs_size;
-    cvs.height = cvs_size;
-    var ctx2 = cvs.getContext("2d");
-    ctx2.drawImage(img, 0, 0, cvs_size, cvs_size);
-    var imgData = ctx2.getImageData(0, 0, cvs_size, cvs_size);
+    // var brush_canvas = document.getElement('brush_canvas');
+    brush_canvas.width = brush_canvas_size;
+    brush_canvas.height = brush_canvas_size;
+    var ctx2 = brush_canvas.getContext("2d");
+    ctx2.drawImage(img, 0, 0, brush_canvas_size, brush_canvas_size);
+    var imgData = ctx2.getImageData(0, 0, brush_canvas_size, brush_canvas_size);
     var i;
     for (i = 0; i < imgData.data.length; i += 4) {
-      imgData.data[i] = color[0];
-      imgData.data[i+1] = color[1];
-      imgData.data[i+2] = color[2];
-      imgData.data[i+3] = imgData.data[i+3];
+        imgData.data[i] = color[0];
+        imgData.data[i+1] = color[1];
+        imgData.data[i+2] = color[2];
+        imgData.data[i+3] = imgData.data[i+3];
     }
 
     ctx2.putImageData(imgData, 0, 0);
-    img.src = cvs.toDataURL();
+    img.src = brush_canvas.toDataURL();
 
-    drawing = true;
-    paint(ev);
-    // ctx.fillStyle = 'teal';
-
-    // var imageData = ctx.getImageData(ev.x, ev.y, 1, 1).data;
-    // rgbaColor = 'rgba(' + imageData[0] + ',' + imageData[1] + ',' + imageData[2] + ',1)';
-    // print('color:', rgbaColor);
-    // if (rgbaColor != 'rgba(0,0,0,1)') {
-    //     ctx.fillStyle = rgbaColor;
-    // }
-    // ctx.fillRect(ev.x, ev.y, 64, 64);
-    // ctx.drawImage(img, ev.x, ev.y, 64, 64);
+    if (!using_eyedropper) {
+        drawing = true;
+        paint(ev);
+    }
+    else {  // color pick
+        pos = get_canvas_position(ev);
+        rgb_color = ctx.getImageData(pos[0], pos[1], 1, 1).data;
+        hsb_color = RGBtoHSV(rgb_color[0], rgb_color[1], rgb_color[2]);
+        hue_slider.value = hsb_color.h*360;
+        saturation_slider.value = hsb_color.s*100;
+        value_slider.value = hsb_color.v*100;
+        update_color();
+        using_eyedropper = false;
+    }
 }
 canvas.addEventListener("mousedown", mouse_down, false);
 canvas.addEventListener("touchstart", mouse_down, false);
@@ -126,30 +110,39 @@ var canvas_rect = canvas.getBoundingClientRect();
 var brush_size = 256;
 
 function distanceApprox(p1,p2){
-	// Approximation by using octagons approach
-	var x = p2[0]-p1[0];
-	var y = p2[1]-p1[1];
-	return 1.426776695*Math.min(0.7071067812*(Math.abs(x)+Math.abs(y)), Math.max (Math.abs(x), Math.abs(y)));
+  	// Approximation by using octagons approach
+  	var x = p2[0]-p1[0];
+  	var y = p2[1]-p1[1];
+  	return 1.426776695*Math.min(0.7071067812*(Math.abs(x)+Math.abs(y)), Math.max (Math.abs(x), Math.abs(y)));
 }
 
 function lerp(a, b, t) {
     return a + (b - a) * t;
 }
 
-function paint(e) {
+function get_canvas_position(ev) {
+    if(ev.type == 'touchmove') {
+        ev.preventDefault();
+        var touch = ev.touches[0] || ev.changedTouches[0];
+        var h = canvas.height / canvas_rect.height;
+        var x = (touch.pageX - canvas_rect.x) * h;
+        var y = (touch.pageY - canvas_rect.top) * h;
+    }
+    else {
+        var h = canvas.height / canvas_rect.height;
+        var x = (ev.x - canvas_rect.x) * h;
+        var y = (ev.y - canvas_rect.top) * h;
+    }
+    return [Math.floor(x), Math.floor(y)];
+}
+
+
+function paint(ev) {
     if (drawing) {
-        if(e.type == 'touchmove') {
-            e.preventDefault();
-            var touch = e.touches[0] || e.changedTouches[0];
-            var h = canvas.height / canvas_rect.height;
-            x = (touch.pageX - canvas_rect.x) * h;
-            y = (touch.pageY - canvas_rect.top) * h;
-        }
-        else {
-            var h = canvas.height / canvas_rect.height;
-            x = (e.x - canvas_rect.x) * h;
-            y = (e.y - canvas_rect.top) * h;
-        }
+        var pos = get_canvas_position(ev);
+        var x = pos[0];
+        var y = pos[1];
+
         if (prev_pos == null) {
             ctx.drawImage(img, x-(brush_size/2), y-(brush_size/2), brush_size, brush_size);
         }
@@ -169,7 +162,7 @@ function paint(e) {
                 }
             }
         }
-        prev_pos = [x,y];
+        prev_pos = pos;
     }
 }
 canvas.addEventListener("mousemove", paint, false);
@@ -178,26 +171,126 @@ canvas.addEventListener("touchmove", paint, false);
 
 // color sliders
 var white_button = document.getElementById("white_button");
+var eyedropper_button = document.getElementById("eyedropper_button");
 var hue_slider = document.getElementById("hue_slider");
 var saturation_slider = document.getElementById("saturation_slider");
 var value_slider = document.getElementById("value_slider");
 var color_panel = document.getElementById("color_panel");
 
 white_button.onclick = function() {color=[255,255,255,255]}
-
-document.getElementById("eyedropper_button").onclick = function() {
-    color=[255,255,255,255]
+eyedropper_button.onclick = function() {
+    print('eydrop');
+    using_eyedropper=true;
 }
+
+document.onkeydown = function(ev) {
+    if (ev.altKey) {
+      using_eyedropper=true;
+    }
+}
+document.onkeyup = function(ev) {
+    using_eyedropper=false;
+}
+
 document.getElementById("increase_brush_size_button").onclick = function() {brush_size *= 1.5}
 document.getElementById("decrease_brush_size_button").onclick = function() {brush_size *= .75}
 
+function HSVtoRGB(h, s, v) {
+    var r, g, b, i, f, p, q, t;
+    if (arguments.length === 1) {
+        s = h.s, v = h.v, h = h.h;
+    }
+    i = Math.floor(h * 6);
+    f = h * 6 - i;
+    p = v * (1 - s);
+    q = v * (1 - f * s);
+    t = v * (1 - (1 - f) * s);
+    switch (i % 6) {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+    return {
+        r: Math.round(r * 255),
+        g: Math.round(g * 255),
+        b: Math.round(b * 255)
+    };
+}
+
+function RGBtoHSV(r, g, b) {
+    if (arguments.length === 1) {
+        g = r.g, b = r.b, r = r.r;
+    }
+    var max = Math.max(r, g, b), min = Math.min(r, g, b),
+        d = max - min,
+        h,
+        s = (max === 0 ? 0 : d / max),
+        v = max / 255;
+
+    switch (max) {
+        case min: h = 0; break;
+        case r: h = (g - b) + d * (g < b ? 6: 0); h /= 6 * d; break;
+        case g: h = (b - r) + d * 2; h /= 6 * d; break;
+        case b: h = (r - g) + d * 4; h /= 6 * d; break;
+    }
+
+    return {
+        h: h,
+        s: s,
+        v: v
+    };
+}
+
 function update_color () {
-  color_panel.style.backgroundColor = 'rgb('+hue_slider.value+', '+saturation_slider.value+', '+value_slider.value+')';
-  color = [hue_slider.value, saturation_slider.value, value_slider.value];
+    color = HSVtoRGB(hue_slider.value/360, saturation_slider.value/100, value_slider.value/100);
+    color = [color.r, color.g, color.b];
+    color_panel.style.backgroundColor = 'rgb('+color[0]+', '+color[1]+', '+color[2]+')';
 }
 
 hue_slider.oninput = update_color
 saturation_slider.oninput = update_color
 value_slider.oninput = update_color
+
+
+
+// TEXT
+var text_layer = document.createElement('canvas');
+text_layer.id = 'text_layer';
+text_layer.width = w;
+text_layer.height = h;
+text_layer.style.position = 'absolute';
+text_layer.style.left = '1%';
+text_layer.style.pointerEvents = 'none';
+if (h > w) {text_layer.style.height = '88%'; text_layer.style.width = text_layer.style.height * 9/16;}
+else {text_layer.style.width = '88%'; text_layer.style.height = text_layer.style.width * 9/16;}
+document.body.appendChild(text_layer);
+  
+var tl_ctx = text_layer.getContext('2d');
+print(tl_ctx);
+text_size = 90
+tl_ctx.font = text_size + "px Arial";
+tl_ctx.textAlign = "center";
+var text =  'Hello World!\n'+
+            'Whats up?';
+            
+var text_pos = {'x':w/2, 'y':h/2};
+
+// tl_ctx.fillStyle = 'red';
+// // draw background
+// var width = tl_ctx.measureText(text).width;
+// print(tl_ctx.measureText(text));
+// tl_ctx.fillRect(text_pos.x - (width/2), text_pos.y - (text_size), width, text_size);
+tl_ctx.fillStyle = 'black';
+var lines = text.split('\n');
+for (var i = 0; i<lines.length; i++) {
+    tl_ctx.fillText(lines[i], text_pos.x, text_pos.y + (i*text_size));
+}
+
+
+// tl_ctx.fillText(text, text_pos.x, text_pos.y);
+
 
 </script>
