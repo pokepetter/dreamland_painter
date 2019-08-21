@@ -256,41 +256,41 @@ value_slider.oninput = update_color
 
 
 
-// TEXT
-var text_layer = document.createElement('canvas');
-text_layer.id = 'text_layer';
-text_layer.width = w;
-text_layer.height = h;
-text_layer.style.position = 'absolute';
-text_layer.style.left = '1%';
-text_layer.style.pointerEvents = 'none';
-if (h > w) {text_layer.style.height = '88%'; text_layer.style.width = text_layer.style.height * 9/16;}
-else {text_layer.style.width = '88%'; text_layer.style.height = text_layer.style.width * 9/16;}
-document.body.appendChild(text_layer);
-  
-var tl_ctx = text_layer.getContext('2d');
-print(tl_ctx);
-text_size = 90
-tl_ctx.font = text_size + "px Arial";
-tl_ctx.textAlign = "center";
-var text =  'Hello World!\n'+
-            'Whats up?';
-            
-var text_pos = {'x':w/2, 'y':h/2};
-
-// tl_ctx.fillStyle = 'red';
-// // draw background
-// var width = tl_ctx.measureText(text).width;
-// print(tl_ctx.measureText(text));
-// tl_ctx.fillRect(text_pos.x - (width/2), text_pos.y - (text_size), width, text_size);
-tl_ctx.fillStyle = 'black';
-var lines = text.split('\n');
-for (var i = 0; i<lines.length; i++) {
-    tl_ctx.fillText(lines[i], text_pos.x, text_pos.y + (i*text_size));
-}
-
-
-// tl_ctx.fillText(text, text_pos.x, text_pos.y);
+// // TEXT
+// var text_layer = document.createElement('canvas');
+// text_layer.id = 'text_layer';
+// text_layer.width = w;
+// text_layer.height = h;
+// text_layer.style.position = 'absolute';
+// text_layer.style.left = '1%';
+// text_layer.style.pointerEvents = 'none';
+// if (h > w) {text_layer.style.height = '88%'; text_layer.style.width = text_layer.style.height * 9/16;}
+// else {text_layer.style.width = '88%'; text_layer.style.height = text_layer.style.width * 9/16;}
+// document.body.appendChild(text_layer);
+// 
+// var tl_ctx = text_layer.getContext('2d');
+// print(tl_ctx);
+// text_size = 90
+// tl_ctx.font = text_size + "px Arial";
+// tl_ctx.textAlign = "center";
+// var text =  'Hello World!\n'+
+//             'Whats up?';
+// 
+// var text_pos = {'x':w/2, 'y':h/2};
+// 
+// // tl_ctx.fillStyle = 'red';
+// // // draw background
+// // var width = tl_ctx.measureText(text).width;
+// // print(tl_ctx.measureText(text));
+// // tl_ctx.fillRect(text_pos.x - (width/2), text_pos.y - (text_size), width, text_size);
+// tl_ctx.fillStyle = 'black';
+// var lines = text.split('\n');
+// for (var i = 0; i<lines.length; i++) {
+//     tl_ctx.fillText(lines[i], text_pos.x, text_pos.y + (i*text_size));
+// }
+// 
+// 
+// // tl_ctx.fillText(text, text_pos.x, text_pos.y);
 
 
 </script>
