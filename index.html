@@ -32,8 +32,8 @@ print = console.log
 var canvas = document.createElement('canvas');
 var w = 1080;
 var h = 1920;
-var h = 1080;
-var w = 1920;
+// var h = 1080;
+// var w = 1920;
 canvas.id = 'someId';
 canvas.width = w;
 canvas.height = h;
@@ -175,7 +175,7 @@ function paint(ev) {
             ctx.drawImage(img, x-(brush_size/2), y-(brush_size/2), brush_size, brush_size);
         }
         else {  // draw line between points
-            for (var i = 0; i < dist; i+=8) {
+            for (var i = 0; i < dist; i+=brush_size/16) {
                 t = i/dist;
                 var _x = lerp(prev_pos[0], x, t);
                 var _y = lerp(prev_pos[1], y, t);
