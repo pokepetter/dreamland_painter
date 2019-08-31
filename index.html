@@ -32,8 +32,8 @@ print = console.log
 var canvas = document.createElement('canvas');
 var w = 1080;
 var h = 1920;
-// var h = 1080;
-// var w = 1920;
+var h = 1080;
+var w = 1920;
 canvas.id = 'someId';
 canvas.width = w;
 canvas.height = h;
@@ -150,15 +150,15 @@ function paint(ev) {
         ev.preventDefault();
         ev.stopImmediatePropagation();
 
-        // if (ev.touches.length == 2) {
-        //     var start = get_canvas_position(ev.touches[0]);
-        //     var end = get_canvas_position(ev.touches[1]);
-        //     ctx.beginPath();
-        //     ctx.moveTo(start[0], start[1]);
-        //     ctx.lineTo(end[0], end[1]);
-        //     ctx.stroke();
-        //     return;
-        // }
+        if (ev.touches.length == 2) {
+            var start = get_canvas_position(ev.touches[0]);
+            var end = get_canvas_position(ev.touches[1]);
+            ctx.beginPath();
+            ctx.moveTo(start[0], start[1]);
+            ctx.lineTo(end[0], end[1]);
+            ctx.stroke();
+            return;
+        }
     }
 
     var pos = get_canvas_position(ev);
