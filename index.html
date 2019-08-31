@@ -8,12 +8,12 @@
 
 <body style="margin: 0; background-color:black">
     <div id="button_container" style="right:0%; top:1%; position:fixed; display:block; width:10%; z-index:1;">
-        <button class="button" id="white_button">white</button>
+        <button class="button" id="color_panel">color</button>
         <button class="button" id="eyedropper_button">eyedropper</button>
         <button class="button" id="increase_brush_size_button">+</button>
         <button class="button" id="decrease_brush_size_button">-</button>
-        <button class="button" id="color_panel">color</button>
-        <button class="button" id="pen">pen</button>
+        <button class="button" id="pen_button">round</button>
+        <button class="button" id="pokebrush_button">brush</button>
         <a class="button" id="save_button">save</a>
     </div>
     <div id="footer" style="left:1%; bottom:1%; position:fixed; width:50%; z-index:1;">
@@ -54,13 +54,11 @@ ctx = canvas.getContext('2d')
 ctx.fillStyle = 'white';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+brush = new Image();
 img = new Image();
-// img.setAttribute('crossOrigin', '');
-// img.src = "round_brush.png";
-// img.crossOrigin = "Anonymous";
-img.src = "pokebrush.png";
+brush.src = "pokebrush.png";
 
-brush_canvas_size = 128;
+brush_size = 256;
 var brush_canvas = document.createElement('canvas');
 
 color = [128, 128, 0];
@@ -69,11 +67,11 @@ using_eyedropper = false;
 var prev_pos = null;
 
 function mouse_down(ev) {
-    brush_canvas.width = brush_canvas_size;
-    brush_canvas.height = brush_canvas_size;
+    brush_canvas.width = brush_size;
+    brush_canvas.height = brush_size;
     var ctx2 = brush_canvas.getContext("2d");
-    ctx2.drawImage(img, 0, 0, brush_canvas_size, brush_canvas_size);
-    var imgData = ctx2.getImageData(0, 0, brush_canvas_size, brush_canvas_size);
+    ctx2.drawImage(brush, 0, 0, brush_size, brush_size);
+    var imgData = ctx2.getImageData(0, 0, brush_size, brush_size);
     var i;
     for (i = 0; i < imgData.data.length; i += 4) {
         imgData.data[i] = color[0];
@@ -110,7 +108,6 @@ function mouse_up(ev) {
 document.addEventListener("mouseup", mouse_up, false);
 document.addEventListener("touchend", mouse_up, false);
 var canvas_rect = canvas.getBoundingClientRect();
-var brush_size = 256;
 
 function distanceApprox(p1,p2){
   	// Approximation by using octagons approach
@@ -174,11 +171,11 @@ function paint(ev) {
     else {
         var dist = distanceApprox(prev_pos, [x,y]);
         dist = Math.floor(dist);
-        if (dist <= 1 * (brush_size/16)) {
+        if (dist <= 1 * (brush_size/8)) {
             ctx.drawImage(img, x-(brush_size/2), y-(brush_size/2), brush_size, brush_size);
         }
         else {  // draw line between points
-            for (var i = 0; i < dist; i++) {
+            for (var i = 0; i < dist; i+=8) {
                 t = i/dist;
                 var _x = lerp(prev_pos[0], x, t);
                 var _y = lerp(prev_pos[1], y, t);
@@ -198,10 +195,12 @@ var saturation_slider = document.getElementById("saturation_slider");
 var value_slider = document.getElementById("value_slider");
 var color_panel = document.getElementById("color_panel");
 
-document.getElementById("white_button").onclick = function() {color=[255,255,255,255]}
-document.getElementById("eyedropper_button").onclick = function() {
-    using_eyedropper=true;
-}
+document.getElementById("eyedropper_button").onclick = function() {using_eyedropper=true}
+document.getElementById("increase_brush_size_button").onclick = function() {brush_size *= 1.5;}
+document.getElementById("decrease_brush_size_button").onclick = function() {brush_size *= .75;}
+document.getElementById("pen_button").onclick = function() {brush.src="round_brush.png"}
+document.getElementById("pokebrush_button").onclick = function() {brush.src="pokebrush.png"}
+
 
 document.onkeydown = function(ev) {
     if (ev.altKey) {
@@ -212,8 +211,6 @@ document.onkeyup = function(ev) {
     using_eyedropper = false;
 }
 
-document.getElementById("increase_brush_size_button").onclick = function() {brush_size *= 1.5}
-document.getElementById("decrease_brush_size_button").onclick = function() {brush_size *= .75}
 
 var save_button = document.getElementById("save_button");
 save_button.onclick = function(ev) {
