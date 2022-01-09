@@ -1,6 +1,6 @@
 <html>
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8" name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no'/>
     <title>Dreamland Painter</title>
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
@@ -14,7 +14,8 @@
         <button class="button" id="decrease_brush_size_button">-</button>
         <button class="button" id="pen_button">round</button>
         <button class="button" id="pokebrush_button">brush</button>
-        <a class="button" id="save_button">save</a>
+        <button class="button" id="save_button">save</button>
+        <button class="button" id="clear_button">clear</button>
     </div>
     <div id="footer" style="left:1%; bottom:1%; position:fixed; width:50%; z-index:1;">
         <div class="slidecontainer"><input type="range" min="0" max="360" value="50" class="slider" id="hue_slider"></div>
@@ -32,8 +33,8 @@ print = console.log
 var canvas = document.createElement('canvas');
 var w = 1080;
 var h = 1920;
-var h = 1080;
-var w = 1920;
+// var h = 1080;
+// var w = 1920;
 canvas.id = 'someId';
 canvas.width = w;
 canvas.height = h;
@@ -102,8 +103,12 @@ canvas.addEventListener("mousedown", mouse_down, false);
 canvas.addEventListener("touchstart", mouse_down, false);
 
 function mouse_up(ev) {
+    if (drawing) {
+        record_undo()
+    }
     drawing = false;
     prev_pos = null;
+
 }
 document.addEventListener("mouseup", mouse_up, false);
 document.addEventListener("touchend", mouse_up, false);
@@ -149,7 +154,7 @@ function paint(ev) {
     if (ev.touches && ev.touches.length) {
         ev.preventDefault();
         ev.stopImmediatePropagation();
-
+        print(ev.touches.length);
         if (ev.touches.length == 2) {
             var start = get_canvas_position(ev.touches[0]);
             var end = get_canvas_position(ev.touches[1]);
@@ -196,27 +201,27 @@ var value_slider = document.getElementById("value_slider");
 var color_panel = document.getElementById("color_panel");
 
 document.getElementById("eyedropper_button").onclick = function() {using_eyedropper=true}
-document.getElementById("increase_brush_size_button").onclick = function() {brush_size *= 1.5;}
-document.getElementById("decrease_brush_size_button").onclick = function() {brush_size *= .75;}
+document.getElementById("increase_brush_size_button").onclick = function() {brush_size *= 1.5}
+document.getElementById("decrease_brush_size_button").onclick = function() {brush_size *= .75}
 document.getElementById("pen_button").onclick = function() {brush.src="round_brush.png"}
 document.getElementById("pokebrush_button").onclick = function() {brush.src="pokebrush.png"}
+document.getElementById("clear_button").onclick = function() {ctx.fillStyle = 'white'; ctx.fillRect(0, 0, canvas.width, canvas.height); record_undo()}
 
 
-document.onkeydown = function(ev) {
-    if (ev.altKey) {
+document.onkeydown = function(event) {
+    if (event.altKey) {
       using_eyedropper = true;
+    }
+    if (event.ctrlKey && event.key === 'z') {
+        undo()
+    }
+    if (event.ctrlKey && event.key === 'y') {
+        redo()
     }
 }
 document.onkeyup = function(ev) {
     using_eyedropper = false;
 }
-
-
-var save_button = document.getElementById("save_button");
-save_button.onclick = function(ev) {
-    save_button.href = canvas.toDataURL();
-    save_button.download = "untitled.png";
-};
 
 function update_color () {
     color = HSVtoRGB(hue_slider.value/360, saturation_slider.value/100, value_slider.value/100);
@@ -227,6 +232,60 @@ function update_color () {
 hue_slider.oninput = update_color
 saturation_slider.oninput = update_color
 value_slider.oninput = update_color
+
+
+
+var save_button = document.getElementById("save_button")
+save_button.onclick = function(ev) {
+    var dataURL = canvas.toDataURL("image");
+    window.localStorage.setItem("image", dataURL)
+};
+
+var saved_image = window.localStorage.getItem("image")
+
+if (saved_image) {
+    var loaded_image = new Image
+    loaded_image.src = saved_image
+    loaded_image.onload = function () {
+        ctx.drawImage(loaded_image, 0, 0)
+    }
+}
+
+const undo_data = [canvas.toDataURL("image"), ]
+var undo_index = 0
+
+function undo() {
+    if (undo_index > 0) {
+        undo_index -= 1
+    }
+    var loaded_image = new Image
+    loaded_image.src = undo_data[undo_index]
+    loaded_image.onload = function () {
+        ctx.drawImage(loaded_image, 0, 0)
+    }
+}
+
+function redo() {
+    if (undo_index < undo_data.length) {
+        undo_index += 1
+    }
+    var loaded_image = new Image
+    loaded_image.src = undo_data[undo_index]
+    loaded_image.onload = function () {
+        ctx.drawImage(loaded_image, 0, 0)
+    }
+}
+
+function record_undo() {
+    if (undo_data.length > undo_index+1) {
+        // print('delete old undo data')
+        undo_data.splice(undo_index+1);
+    }
+
+    // print('record undo')
+    undo_data.push(canvas.toDataURL())
+    undo_index += 1
+}
 
 
 
